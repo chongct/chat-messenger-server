@@ -9,11 +9,7 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "src/index.ts"
-    },
-    {
-      "src": "/(.*)",
-      "methods": ["GET", "POST", "OPTIONS"],
+      "dest": "src/index.ts",
       "headers": {
         "Access-Control-Allow-Origin": "https://chat-messenger-client.vercel.app"
       }
