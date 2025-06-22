@@ -13,7 +13,7 @@
     },
     {
       "src": "/(.*)",
-      "methods": ["OPTIONS"],
+      "methods": ["GET", "POST", "OPTIONS"],
       "headers": {
         "Access-Control-Allow-Origin": "https://chat-messenger-client.vercel.app"
       }
