@@ -13,11 +13,21 @@ const whitelistCorsUrls =
   process.env.NODE_ENV === 'development'
     ? [process.env.FRONTEND_URI].concat('http://localhost:3000')
     : [process.env.FRONTEND_URI];
+const corsOptions = {
+  origin: function (origin, callback) {
+    console.log('whitelistCorsUrls', whitelistCorsUrls, origin);
+    if (whitelistCorsUrls.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+};
 
 dotenv.config();
 
 app.use(bodyParser.json());
-app.use(cors({ origin: whitelistCorsUrls }));
+app.use(cors(corsOptions));
 app.use('/', routes);
 
 (async () => {
