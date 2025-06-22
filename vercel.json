@@ -11,7 +11,8 @@
       "src": "/(.*)",
       "dest": "src/index.ts",
       "headers": {
-        "Access-Control-Allow-Origin": "https://chat-messenger-client.vercel.app"
+        "Access-Control-Allow-Origin": "https://chat-messenger-client.vercel.app",
+        "Access-Control-Allow-Headers": "Content-Type"
       }
     }
   ]
