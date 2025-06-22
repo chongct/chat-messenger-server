@@ -12,13 +12,15 @@
       "dest": "src/index.ts"
     }
   ],
-  "headers": {
-    "source": "/(.*)",
-    "headers": [
-      {
-        "key": "Access-Control-Allow-Origin",
-        "value": "https://chat-messenger-client.vercel.app"
-      }
-    ]
-  }
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "https://chat-messenger-client.vercel.app"
+        }
+      ]
+    }
+  ]
 }
