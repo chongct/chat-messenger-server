@@ -3,10 +3,16 @@ import { validationResult } from 'express-validator';
 import bcrypt from 'bcrypt';
 
 import { authCookieOptions } from '../config';
-import { User } from '../models';
+import { IUser, User } from '../models';
 import { createJwtToken, validationErrorResponse } from '../utils';
 
 const SALT_ROUNDS = 10;
+
+const setAuthenticatedCookie = (user: IUser, res: Response) => {
+  const userId = user._id.toString();
+  const token = createJwtToken({ id: userId });
+  res.cookie('token', token, authCookieOptions).status(200).json({ error: null, userId });
+};
 
 export const getAuthStatus = (req: Request, res: Response) => {
   res.status(200).json({ userId: req.userId });
@@ -39,9 +45,7 @@ export const postLogin = async (req: Request, res: Response) => {
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (isMatch) {
-    const userId = user._id.toString();
-    const token = createJwtToken({ id: userId });
-    res.cookie('token', token, authCookieOptions).status(200).json({ error: null, userId });
+    setAuthenticatedCookie(user, res);
 
     return;
   }
@@ -64,7 +68,7 @@ export const postRegister = async (req: Request, res: Response) => {
 
   try {
     await user.save();
-    res.status(200).json({ error: null, success: true });
+    setAuthenticatedCookie(user, res);
   } catch (error) {
     console.error(`Failed to register user: ${error}`);
     res.status(500);
