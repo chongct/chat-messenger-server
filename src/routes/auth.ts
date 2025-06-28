@@ -1,13 +1,28 @@
 import { Router } from 'express';
 import { body, check } from 'express-validator';
 
-import { authTest, postLogin, postRegister, postRefreshToken, postLogout } from '../controllers';
+import {
+  getAuthStatus,
+  postLogin,
+  postRegister,
+  postRefreshToken,
+  postLogout,
+} from '../controllers';
 import { User } from '../models';
+import { verifyAuth } from '../middlewares';
 
 const authRouter = Router();
 
-authRouter.get('/', authTest);
-authRouter.post('/login', postLogin);
+authRouter.get('/status', verifyAuth, getAuthStatus);
+
+authRouter.post(
+  '/login',
+  [
+    body('email').isEmail().withMessage('Please enter a valid email').normalizeEmail(),
+    body('password').isLength({ min: 2 }).trim(),
+  ],
+  postLogin
+);
 
 authRouter.post(
   '/register',
@@ -23,7 +38,7 @@ authRouter.post(
         }
       })
       .normalizeEmail(),
-    body('password').trim(),
+    body('password').isLength({ min: 2 }).trim(),
     body('confirmPassword')
       .trim()
       .custom((confirmPassword, { req }) => {
