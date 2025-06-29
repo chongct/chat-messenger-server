@@ -5,7 +5,7 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 export const validationErrorResponse = (
   res: Response,
   errors: Result,
-  failRes: Record<string, boolean | null>
+  failRes: Record<string, string>
 ) =>
   res.status(422).json({
     error: errors.array().reduce((combinedError, error) => {
