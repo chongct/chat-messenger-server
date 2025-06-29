@@ -22,7 +22,7 @@ export const postLogin = async (req: Request, res: Response) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    validationErrorResponse(res, errors, { userId: null });
+    validationErrorResponse(res, errors, { userId: '' });
 
     return;
   }
@@ -57,7 +57,7 @@ export const postRegister = async (req: Request, res: Response) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    validationErrorResponse(res, errors, { success: false });
+    validationErrorResponse(res, errors, { userId: '' });
 
     return;
   }
@@ -80,5 +80,6 @@ export const postRefreshToken = (req: Request, res: Response) => {
 };
 
 export const postLogout = (req: Request, res: Response) => {
-  res.send('Login route');
+  res.clearCookie('token', authCookieOptions);
+  res.status(200).json({ userId: '' });
 };
