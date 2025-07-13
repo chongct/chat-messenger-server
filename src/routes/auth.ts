@@ -52,7 +52,7 @@ authRouter.post(
   postRegister
 );
 
-authRouter.post('/refresh-token', postRefreshToken);
+authRouter.post('/refresh', postRefreshToken);
 authRouter.post('/logout', postLogout);
 
 export { authRouter };
