@@ -16,12 +16,22 @@ export const validationErrorResponse = (
     ...failRes,
   });
 
-export const createJwtToken = (payload: Record<string, string>) => {
-  return jwt.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
+export const generateAccessToken = (payload: Record<string, string>) => {
+  return jwt.sign(payload, process.env.ACCESS_SECRET, {
+    expiresIn: process.env.ACCESS_EXPIRES_IN,
   } as SignOptions);
 };
 
-export const verifyJwtToken = (token: string) => {
-  return jwt.verify(token, process.env.JWT_SECRET);
+export const verifyAccessToken = (token: string) => {
+  return jwt.verify(token, process.env.ACCESS_SECRET);
+};
+
+export const generateRefreshToken = (payload: Record<string, string>) => {
+  return jwt.sign(payload, process.env.REFRESH_SECRET, {
+    expiresIn: process.env.REFRESH_EXPIRES_IN,
+  } as SignOptions);
+};
+
+export const verifyRefreshToken = (token: string) => {
+  return jwt.verify(token, process.env.REFRESH_SECRET);
 };

@@ -1,17 +1,43 @@
 import type { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import bcrypt from 'bcrypt';
+import type { JwtPayload } from 'jsonwebtoken';
 
 import { authCookieOptions } from '../config';
-import { IUser, User } from '../models';
-import { createJwtToken, validationErrorResponse } from '../utils';
+import { REFRESH_TOKEN_COOKIE } from '../constants';
+import { IUser, User, RefreshToken } from '../models';
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  validationErrorResponse,
+  verifyRefreshToken,
+} from '../utils';
 
 const SALT_ROUNDS = 10;
 
-const setAuthenticatedCookie = (user: IUser, res: Response) => {
+const generateTokens = async (user: IUser, res: Response) => {
   const userId = user._id.toString();
-  const token = createJwtToken({ id: userId });
-  res.cookie('token', token, authCookieOptions).status(200).json({ error: null, userId });
+  const accessToken = generateAccessToken({ id: userId });
+  const refreshToken = generateRefreshToken({ id: userId });
+  const refreshTokenEntry = new RefreshToken({ user: userId, refreshToken });
+
+  try {
+    const storedUser = await RefreshToken.findOne({ user: userId });
+
+    if (storedUser) {
+      storedUser.refreshToken = refreshToken;
+      await storedUser.save();
+    } else {
+      await refreshTokenEntry.save();
+    }
+  } catch (error) {
+    console.error(`Failed to save refresh token: ${error}`);
+  }
+
+  res
+    .cookie(REFRESH_TOKEN_COOKIE, refreshToken, authCookieOptions)
+    .status(200)
+    .json({ error: null, accessToken, userId });
 };
 
 export const getAuthStatus = (req: Request, res: Response) => {
@@ -45,7 +71,7 @@ export const postLogin = async (req: Request, res: Response) => {
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (isMatch) {
-    setAuthenticatedCookie(user, res);
+    generateTokens(user, res);
 
     return;
   }
@@ -68,18 +94,43 @@ export const postRegister = async (req: Request, res: Response) => {
 
   try {
     await user.save();
-    setAuthenticatedCookie(user, res);
+    generateTokens(user, res);
   } catch (error) {
     console.error(`Failed to register user: ${error}`);
     res.status(500);
   }
 };
 
-export const postRefreshToken = (req: Request, res: Response) => {
-  res.send('Login route');
+export const postRefreshToken = async (req: Request, res: Response) => {
+  const { refreshToken } = req.cookies;
+
+  if (!refreshToken) {
+    res.sendStatus(401);
+  }
+
+  const refreshTokenEntry = await RefreshToken.findOne({ refreshToken });
+
+  if (!refreshTokenEntry) {
+    res.sendStatus(403);
+
+    return;
+  }
+
+  const { refreshToken: storedRefreshToken } = refreshTokenEntry;
+  const decodedJwt = verifyRefreshToken(storedRefreshToken) as JwtPayload;
+  const { id } = decodedJwt ?? {};
+  const user = await User.findById(id);
+
+  if (user) {
+    generateTokens(user, res);
+
+    return;
+  }
+
+  res.sendStatus(403);
 };
 
 export const postLogout = (req: Request, res: Response) => {
-  res.clearCookie('token', authCookieOptions);
+  res.clearCookie(REFRESH_TOKEN_COOKIE, authCookieOptions);
   res.status(200).json({ userId: '' });
 };
