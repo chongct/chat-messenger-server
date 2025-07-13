@@ -102,10 +102,12 @@ export const postRegister = async (req: Request, res: Response) => {
 };
 
 export const postRefreshToken = async (req: Request, res: Response) => {
-  const { refreshToken } = req.cookies;
+  const { refreshToken } = req.cookies ?? {};
 
   if (!refreshToken) {
     res.sendStatus(401);
+
+    return;
   }
 
   const refreshTokenEntry = await RefreshToken.findOne({ refreshToken });
@@ -130,7 +132,9 @@ export const postRefreshToken = async (req: Request, res: Response) => {
   res.sendStatus(403);
 };
 
-export const postLogout = (req: Request, res: Response) => {
+export const postLogout = async (req: Request, res: Response) => {
+  const { refreshToken } = req.cookies ?? {};
+  await RefreshToken.deleteOne({ refreshToken });
   res.clearCookie(REFRESH_TOKEN_COOKIE, authCookieOptions);
   res.status(200).json({ userId: '' });
 };
