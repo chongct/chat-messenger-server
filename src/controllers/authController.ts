@@ -1,4 +1,4 @@
-// import crypto from 'node:crypto';
+import crypto from 'node:crypto';
 
 import type { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
@@ -146,6 +146,6 @@ export const postLogout = async (req: Request, res: Response) => {
 };
 
 export const getCsrfToken = async (req: Request, res: Response) => {
-  // const token = crypto.randomBytes(32).toString('hex');
-  res.cookie('csrf_token', 'token', csrfCookieOptions).sendStatus(200);
+  const token = crypto.randomBytes(32).toString('hex');
+  res.cookie('csrf_token', token, csrfCookieOptions).sendStatus(200);
 };
