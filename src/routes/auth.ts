@@ -7,10 +7,9 @@ import {
   postRegister,
   postRefreshToken,
   postLogout,
-  getCsrfToken,
 } from '../controllers';
 import { User } from '../models';
-import { verifyAuth, verifyCsrf } from '../middlewares';
+import { verifyAuth } from '../middlewares';
 
 const authRouter = Router();
 
@@ -53,8 +52,7 @@ authRouter.post(
   postRegister
 );
 
-authRouter.post('/refresh', verifyCsrf, postRefreshToken);
-authRouter.post('/logout', verifyCsrf, postLogout);
-authRouter.get('/csrf-token', getCsrfToken);
+authRouter.post('/refresh', postRefreshToken);
+authRouter.post('/logout', postLogout);
 
 export { authRouter };
