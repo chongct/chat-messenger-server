@@ -28,3 +28,16 @@ export const verifyAuth = (req: Request, res: Response, next: NextFunction) => {
     res.sendStatus(401);
   }
 };
+
+export const verifyCsrf = (req: Request, res: Response, next: NextFunction) => {
+  const csrfTokenCookie = req.cookies['csrf_token'];
+  const csrfTokenHeader = req.headers['x-csrf-token'];
+
+  if (!csrfTokenCookie || !csrfTokenHeader) {
+    res.sendStatus(403);
+
+    return;
+  }
+
+  next();
+};

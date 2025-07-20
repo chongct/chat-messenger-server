@@ -1,9 +1,11 @@
+import crypto from 'crypto';
+
 import type { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import bcrypt from 'bcrypt';
 import type { JwtPayload } from 'jsonwebtoken';
 
-import { authCookieOptions } from '../config';
+import { authCookieOptions, csrfCookieOptions, IS_COOKIE_DISABLED } from '../config';
 import { REFRESH_TOKEN_COOKIE } from '../constants';
 import { IUser, User, RefreshToken } from '../models';
 import {
@@ -37,7 +39,7 @@ const generateTokens = async (user: IUser, res: Response) => {
   res
     .cookie(REFRESH_TOKEN_COOKIE, refreshToken, authCookieOptions)
     .status(200)
-    .json({ error: null, accessToken, userId });
+    .json({ error: null, accessToken, userId, ...(IS_COOKIE_DISABLED ? { refreshToken } : {}) });
 };
 
 export const getAuthStatus = (req: Request, res: Response) => {
@@ -102,7 +104,9 @@ export const postRegister = async (req: Request, res: Response) => {
 };
 
 export const postRefreshToken = async (req: Request, res: Response) => {
-  const { refreshToken } = req.cookies ?? {};
+  const refreshToken = IS_COOKIE_DISABLED
+    ? req.headers['x-refresh-token']
+    : req.cookies?.refreshToken;
 
   if (!refreshToken) {
     res.sendStatus(401);
@@ -133,8 +137,15 @@ export const postRefreshToken = async (req: Request, res: Response) => {
 };
 
 export const postLogout = async (req: Request, res: Response) => {
-  const { refreshToken } = req.cookies ?? {};
+  const refreshToken = IS_COOKIE_DISABLED
+    ? req.headers['x-refresh-token']
+    : req.cookies?.refreshToken;
   await RefreshToken.deleteOne({ refreshToken });
   res.clearCookie(REFRESH_TOKEN_COOKIE, authCookieOptions);
   res.status(200).json({ userId: '' });
+};
+
+export const getCsrfToken = async (req: Request, res: Response) => {
+  const token = crypto.randomBytes(32).toString('hex');
+  res.cookie('csrf_token', token, csrfCookieOptions).sendStatus(200);
 };
