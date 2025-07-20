@@ -1,4 +1,4 @@
-import crypto from 'node:crypto';
+import crypto from 'crypto';
 
 import type { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
