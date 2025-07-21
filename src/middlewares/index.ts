@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { JwtPayload } from 'jsonwebtoken';
 
-import { verifyAccessToken } from '../utils';
+import { verifyAccessToken, verifyCsrfToken } from '../utils';
 
 export const verifyAuth = (req: Request, res: Response, next: NextFunction) => {
   const bearerAccessToken = req.headers['authorization'];
@@ -30,14 +30,19 @@ export const verifyAuth = (req: Request, res: Response, next: NextFunction) => {
 };
 
 export const verifyCsrf = (req: Request, res: Response, next: NextFunction) => {
-  const csrfTokenCookie = req.cookies['csrf_token'];
-  const csrfTokenHeader = req.headers['x-csrf-token'];
+  const csrfToken = req.headers['x-csrf-token'];
 
-  if (!csrfTokenCookie || !csrfTokenHeader) {
+  if (!csrfToken) {
     res.sendStatus(403);
 
     return;
   }
 
-  next();
+  try {
+    verifyCsrfToken(csrfToken as string);
+    next();
+  } catch (error) {
+    console.error(`[verifyCsrf] error: ${error}`);
+    res.sendStatus(403);
+  }
 };
