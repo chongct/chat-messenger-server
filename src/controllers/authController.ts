@@ -1,16 +1,15 @@
-import crypto from 'crypto';
-
 import type { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
 import bcrypt from 'bcrypt';
 import type { JwtPayload } from 'jsonwebtoken';
 
-import { authCookieOptions, csrfCookieOptions, IS_COOKIE_DISABLED } from '../config';
+import { authCookieOptions, IS_COOKIE_DISABLED } from '../config';
 import { REFRESH_TOKEN_COOKIE } from '../constants';
 import { IUser, User, RefreshToken } from '../models';
 import {
   generateAccessToken,
   generateRefreshToken,
+  generateCsrfToken,
   validationErrorResponse,
   verifyRefreshToken,
 } from '../utils';
@@ -146,6 +145,6 @@ export const postLogout = async (req: Request, res: Response) => {
 };
 
 export const getCsrfToken = async (req: Request, res: Response) => {
-  const token = crypto.randomBytes(32).toString('hex');
-  res.cookie('csrf_token', token, csrfCookieOptions).sendStatus(200);
+  const csrfToken = generateCsrfToken({ id: '' });
+  res.json({ token: csrfToken });
 };

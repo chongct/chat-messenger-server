@@ -35,3 +35,13 @@ export const generateRefreshToken = (payload: Record<string, string>) => {
 export const verifyRefreshToken = (token: string) => {
   return jwt.verify(token, process.env.REFRESH_SECRET);
 };
+
+export const generateCsrfToken = (payload: Record<string, string>) => {
+  return jwt.sign(payload, process.env.CSRF_SECRET, {
+    expiresIn: process.env.CSRF_EXPIRES_IN,
+  } as SignOptions);
+};
+
+export const verifyCsrfToken = (token: string) => {
+  return jwt.verify(token, process.env.CSRF_SECRET);
+};
